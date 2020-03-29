@@ -1,0 +1,58 @@
+---
+title: "Week11-twitter"
+author: "Jiayin Qu"
+date: "3/28/2020"
+output: pdf_document
+---
+# Library Imports
+```{r twiter api setup, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(twitteR)
+library(stringr)
+api <- 'e0y2pHHrYtT320wP8WSsPa0i7'
+apiSecret <- 'Ewv63M79SR6ocpWGbW5lpOgiX3z8aMJddwqR5Fx70tjxo4lb4r'
+access <- '1195948151179501569-THuTApWDbYUrbooDA0iSldWpgY63WT'
+accessSecret <- 'OY5ESKILi1GgVivsbM1JeM3UmWLISO7ToADW8V9ZlZL4v'
+
+setup_twitter_oauth(api, apiSecret, access, accessSecret)
+```
+
+# Data Import
+```{r}
+tweets <- searchTwitter("#rstats", 1000)
+tweets_clean <- strip_retweets(tweets)
+tweets_tbl <- twListToDF(tweets_clean) %>%
+  transmute(text, 
+            screenName, 
+            favoriteCount, 
+            retweetCount, 
+            len_tweets = str_count(text))
+```
+
+# Analysis
+```{r}
+#calculate the relationship between length of tweet and other variables
+corRetweet <- cor.test(tweets_tbl$len_tweets, tweets_tbl$retweetCount, method = "pearson")
+corPop <- cor.test(tweets_tbl$len_tweets, tweets_tbl$favoriteCount, method = "pearson")
+```
+The correlation between length of tweet and retweet popularity was `r corRetweet$estimate` `r ifelse(corRetweet$p.value >= .05, "(p>=.05)", "(p<.05")`,  which is `r ifelse(corRetweet$p.value >= .05, "not", "")` statistically significant. 
+
+The correlation between length of tweet and likes/favorites was `r corPop$estimate` `r ifelse(corPop$p.value >= .05, "(p>=.05)", "(p<.05")`,  which is `r ifelse(corPop$p.value >= .05, "not", "")` statistically significant. 
+
+# Visualization
+- visualize the relationship between length of tweet and retweet popularity
+```{r}
+ggplot(tweets_tbl, aes(len_tweets, retweetCount)) + 
+  geom_point() + 
+  labs(x = "length of tweet", y = "retweet popularity")
+```
+
+- visualize the relationship between length of tweet and likes/favorites
+```{r}
+ggplot(tweets_tbl, aes(len_tweets, favoriteCount)) + 
+  geom_point() + 
+  labs(x = "length of tweet", y = "likes/favorites")
+```
+

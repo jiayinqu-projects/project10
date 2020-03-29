@@ -1,0 +1,33 @@
+---
+title: "Week11-qualtrics"
+author: "Jiayin Qu"
+date: "3/29/2020"
+output: pdf_document
+---
+# Library Imports
+```{r setup, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(qualtRics)
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(stringr)
+
+qualtrics_api_credentials(api_key =  "apikeygoeshere", base_url = "https://umn.ca1.qualtrics.com")
+```
+
+
+# Data Import
+```{r}
+surveys <- all_surveys()
+surveys$creationDate = str_replace(surveys$creationDate, "[A-Z]+", " ")
+surveys$creationDate = ymd_hms(surveys$creationDate)
+```
+
+
+# Visualization
+```{r, message = FALSE}
+ggplot(surveys, aes(x = creationDate)) + 
+  stat_bin() + 
+  labs(x = "creation year", y = "number of surveys")
+```
